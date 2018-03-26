@@ -192,7 +192,7 @@ def add_to_manifest(repositories, fallback_branch = None):
             print("Using default branch for %s" % repo_name)
         
         if 'remote' in repository:
-            project.set('remote',repository['branch'])
+            project.set('remote',repository['remote'])
         else:
             print("Using GitHub")
         lm.append(project)
@@ -257,7 +257,9 @@ else:
         if re.match(r"^device_[^_]*_" + device + "$", repo_name):
             print("Found repository: %s" % repository['name'])
             
-            manufacturer = repo_name.replace("android_device_", "").replace("_" + device, "")
+            manufacturer = repo_name.replace("device_", "").replace("_" + device, "")
+            
+            print(manufacturer)
             
             default_revision = get_default_revision()
             print("Default revision: %s" % default_revision)
