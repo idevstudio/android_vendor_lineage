@@ -72,7 +72,7 @@ def add_auth(githubreq):
         githubreq.add_header("Authorization","Basic %s" % githubauth)
 
 if not depsonly:
-    githubreq = urllib.request.Request("https://api.github.com/search/repositories?q=%s+user:LineageOS+in:name+fork:true" % device)
+    githubreq = urllib.request.Request("https://api.github.com/search/repositories?q=%s+user:idevstudio+in:name+fork:true" % device)
     add_auth(githubreq)
     try:
         result = json.loads(urllib.request.urlopen(githubreq).read().decode())
@@ -190,7 +190,11 @@ def add_to_manifest(repositories, fallback_branch = None):
             project.set('revision', fallback_branch)
         else:
             print("Using default branch for %s" % repo_name)
-
+        
+        if 'remote' in repository:
+            project.set('remote',repository['branch'])
+        else:
+            print("Using GitHub")
         lm.append(project)
 
     indent(lm, 0)
@@ -250,7 +254,7 @@ if depsonly:
 else:
     for repository in repositories:
         repo_name = repository['name']
-        if re.match(r"^android_device_[^_]*_" + device + "$", repo_name):
+        if re.match(r"^device_[^_]*_" + device + "$", repo_name):
             print("Found repository: %s" % repository['name'])
             
             manufacturer = repo_name.replace("android_device_", "").replace("_" + device, "")
@@ -269,7 +273,7 @@ else:
                 result.extend (json.loads(urllib.request.urlopen(githubreq).read().decode()))
             
             repo_path = "device/%s/%s" % (manufacturer, device)
-            adding = {'repository':repo_name,'target_path':repo_path}
+            adding = {'repository':repo_name,'target_path':repo_path, 'remote':"own_libra"}
             
             fallback_branch = None
             if not has_branch(result, default_revision):
