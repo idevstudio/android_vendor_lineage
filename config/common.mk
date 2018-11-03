@@ -28,7 +28,7 @@ endif
 
 ifneq ($(TARGET_BUILD_VARIANT),eng)
 # Enable ADB authentication
-PRODUCT_DEFAULT_PROPERTY_OVERRIDES += ro.adb.secure=1
+PRODUCT_SYSTEM_DEFAULT_PROPERTIES += ro.adb.secure=1
 endif
 
 ifeq ($(BOARD_CACHEIMAGE_FILE_SYSTEM_TYPE),)
@@ -46,6 +46,13 @@ PRODUCT_COPY_FILES += \
     vendor/lineage/prebuilt/common/bin/50-lineage.sh:system/addon.d/50-lineage.sh \
     vendor/lineage/prebuilt/common/bin/blacklist:system/addon.d/blacklist
 
+ifeq ($(AB_OTA_UPDATER),true)
+PRODUCT_COPY_FILES += \
+    vendor/lineage/prebuilt/common/bin/backuptool_ab.sh:system/bin/backuptool_ab.sh \
+    vendor/lineage/prebuilt/common/bin/backuptool_ab.functions:system/bin/backuptool_ab.functions \
+    vendor/lineage/prebuilt/common/bin/backuptool_postinstall.sh:system/bin/backuptool_postinstall.sh
+endif
+
 # Backup Services whitelist
 PRODUCT_COPY_FILES += \
     vendor/lineage/config/permissions/backup.xml:system/etc/sysconfig/backup.xml
@@ -53,10 +60,6 @@ PRODUCT_COPY_FILES += \
 # Lineage-specific broadcast actions whitelist
 PRODUCT_COPY_FILES += \
     vendor/lineage/config/permissions/lineage-sysconfig.xml:system/etc/sysconfig/lineage-sysconfig.xml
-
-# Signature compatibility validation
-PRODUCT_COPY_FILES += \
-    vendor/lineage/prebuilt/common/bin/otasigcheck.sh:install/bin/otasigcheck.sh
 
 # init.d support
 PRODUCT_COPY_FILES += \
@@ -109,7 +112,6 @@ PRODUCT_PACKAGES += \
 
 # Required Lineage packages
 PRODUCT_PACKAGES += \
-    BluetoothExt \
     LineageParts \
     Development \
     Profiles
@@ -146,6 +148,7 @@ PRODUCT_PACKAGES += \
 
 # Berry styles
 PRODUCT_PACKAGES += \
+    LineageBlackTheme \
     LineageDarkTheme \
     LineageBlackAccent \
     LineageBlueAccent \
@@ -165,21 +168,11 @@ PRODUCT_PACKAGES += \
     bash \
     bzip2 \
     curl \
-    fsck.ntfs \
-    gdbserver \
     htop \
     lib7z \
     libsepol \
-    micro_bench \
-    mke2fs \
-    mkfs.ntfs \
-    mount.ntfs \
-    oprofiled \
     pigz \
     powertop \
-    sqlite3 \
-    strace \
-    tune2fs \
     unrar \
     unzip \
     vim \
@@ -198,10 +191,14 @@ PRODUCT_PACKAGES += \
     libhealthd.lineage
 endif
 
-# exFAT tools
+# Filesystems tools
 PRODUCT_PACKAGES += \
     fsck.exfat \
-    mkfs.exfat
+    fsck.ntfs \
+    mke2fs \
+    mkfs.exfat \
+    mkfs.ntfs \
+    mount.ntfs
 
 # Openssh
 PRODUCT_PACKAGES += \
@@ -217,16 +214,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     rsync
 
-# Stagefright FFMPEG plugin
-PRODUCT_PACKAGES += \
-    libffmpeg_extractor \
-    libffmpeg_omx \
-    media_codecs_ffmpeg.xml
-
-PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
-    media.sf.omx-plugin=libffmpeg_omx.so \
-    media.sf.extractor-plugin=libffmpeg_extractor.so
-
 # Storage manager
 PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
     ro.storage_manager.enabled=true
@@ -236,12 +223,14 @@ PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
     media.recorder.show_manufacturer_and_model=true
 
 # These packages are excluded from user builds
-ifneq ($(TARGET_BUILD_VARIANT),user)
-PRODUCT_PACKAGES += \
+PRODUCT_PACKAGES_DEBUG += \
+    micro_bench \
     procmem \
-    procrank
+    procrank \
+    strace
 
 # Conditionally build in su
+ifneq ($(TARGET_BUILD_VARIANT),user)
 ifeq ($(WITH_SU),true)
 PRODUCT_PACKAGES += \
     su
@@ -338,13 +327,6 @@ else
     endif
 endif
 
-PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
-    ro.lineage.version=$(LINEAGE_VERSION) \
-    ro.lineage.releasetype=$(LINEAGE_BUILDTYPE) \
-    ro.lineage.build.version=$(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR) \
-    ro.modversion=$(LINEAGE_VERSION) \
-    ro.lineagelegal.url=https://lineageos.org/legal
-
 PRODUCT_EXTRA_RECOVERY_KEYS += \
     vendor/lineage/build/target/product/security/lineage
 
@@ -375,11 +357,7 @@ ifneq ($(PRODUCT_DEFAULT_DEV_CERTIFICATE),build/target/product/security/testkey)
 endif
 endif
 
-PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
-    ro.lineage.display.version=$(LINEAGE_DISPLAY_VERSION)
-
 -include $(WORKSPACE)/build_env/image-auto-bits.mk
 -include vendor/lineage/config/partner_gms.mk
--include vendor/cyngn/product.mk
 
 $(call prepend-product-if-exists, vendor/extra/product.mk)
