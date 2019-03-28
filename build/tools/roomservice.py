@@ -254,7 +254,7 @@ if depsonly:
 else:
     for repository in repositories:
         repo_name = repository['name']
-        if re.match(r"^device_[^_]*_" + device + "$", repo_name):
+        if re.match(r"^android_device_[^_]*_" + device + "$", repo_name):
             print("Found repository: %s" % repository['name'])
             
             manufacturer = repo_name.replace("device_", "").replace("_" + device, "")
