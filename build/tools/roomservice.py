@@ -257,7 +257,7 @@ else:
         if re.match(r"^android_device_[^_]*_" + device + "$", repo_name):
             print("Found repository: %s" % repository['name'])
             
-            manufacturer = repo_name.replace("device_", "").replace("_" + device, "")
+            manufacturer = repo_name.replace("android_device_", "").replace("_" + device, "")
             
             print(manufacturer)
             
